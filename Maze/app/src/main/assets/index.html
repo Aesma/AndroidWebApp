@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 maze game</title>
+</head>
+<body>
+    <h2>HTML5 Maze Game</h2>
+    <p>
+        Welcome!<br />        
+    </p>
+    <canvas width="465" height="300" id="mazecanvas">Can't load the maze game, because your browser doesn't support HTML5.
+	</canvas>
+    <noscript>JavaScript is not enabled. To play the game, you should enable it.</noscript>
+    <script>
+        var canvas = document.getElementById("mazecanvas");
+        var context = canvas.getContext("2d");
+        var currRectX = 64;
+        var currRectY = 5;
+        var mazeWidth = 414;
+        var mazeHeight = 254;
+        var intervalVar;
+		var startX;
+		var startY;
+		var onRect = false;
+        function drawMazeAndRectangle(rectX, rectY) {
+            makeWhite(0, 0, canvas.width, canvas.height);
+            var mazeImg = new Image();
+            mazeImg.onload = function () {
+                context.drawImage(mazeImg, 0, 0);
+                drawRectangle(rectX, rectY, "#0000FF");
+                context.beginPath();
+                context.arc(268, 8, 3, 0, 2 * Math.PI, false);
+                context.closePath();
+                context.fillStyle = '#00FF00';
+                context.fill();
+            };
+            mazeImg.src = "maze.gif";
+        }
+        function drawRectangle(x, y, style) {
+            makeWhite(currRectX, currRectY, 5, 5);
+            currRectX = x;
+            currRectY = y;
+            context.beginPath();
+            context.rect(x, y, 5, 5);
+            context.closePath();
+            context.fillStyle = style;
+            context.fill();
+        }
+        function canMoveTo(destX, destY) {
+            var imgData = context.getImageData(destX, destY, 5, 5);
+            var data = imgData.data;
+            var canMove = 1; // 1 means: the rectangle can move
+            if (destX >= 0 && destX <= mazeWidth - 5 && destY >= 0 && destY <= mazeHeight - 5) {
+                for (var i = 0; i < 4 * 5 * 5; i += 4) {
+                    if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0) { // black
+                        canMove = 0; // 0 means: the rectangle can't move
+                        break;
+                    }
+                    else if (data[i] === 0 && data[i + 1] === 255 && data[i + 2] === 0) { // #00FF00
+                        canMove = 2; // 2 means: the end point is reached
+                        break;
+                    }
+                }
+            }
+            else {
+                canMove = 0;
+            }
+            return canMove;
+        }
+        function createTimer(seconds) {
+            intervalVar = setInterval(function () {
+                makeWhite(0, mazeHeight, canvas.width, canvas.height - mazeHeight);
+                if (seconds === 0) {
+                    clearInterval(intervalVar);
+                    makeWhite(0, 0, canvas.width, canvas.height);
+                    context.font = "40px Arial";
+                    context.fillStyle = "red";
+                    context.textAlign = "center";
+                    context.textBaseline = "middle";
+                    context.fillText("Time's up!", canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+                context.font = "20px Arial";
+                if (seconds <= 10 && seconds > 5) {
+                    context.fillStyle = "orangered";
+                }
+                else if (seconds <= 5) {
+                    context.fillStyle = "red";
+                }
+                else {
+                    context.fillStyle = "green";
+                }
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                var minutes = Math.floor(seconds / 60);
+                var secondsToShow = (seconds - minutes * 60).toString();
+                if (secondsToShow.length === 1) {
+                    secondsToShow = "0" + secondsToShow; // if the number of seconds is '5' for example, make sure that it is shown as '05'
+                }
+                context.fillText(minutes.toString() + ":" + secondsToShow, 220, canvas.height - 30);
+                seconds--;
+            }, 1000);
+        }
+        function makeWhite(x, y, w, h) {
+            context.beginPath();
+            context.rect(x, y, w, h);
+            context.closePath();
+            context.fillStyle = "white";
+            context.fill();
+        }
+        function up(){
+            newX = currRectX;
+            newY = currRectY - 2;
+            movingAllowed = canMoveTo(newX, newY);
+            if (movingAllowed === 1) {      // 1 means 'the rectangle can move'
+                drawRectangle(newX, newY, "#0000FF");
+                currRectX = newX;
+                currRectY = newY;
+            }
+            else if (movingAllowed === 2) { // 2 means 'the rectangle reached the end point'
+                clearInterval(intervalVar);
+                makeWhite(0, 0, canvas.width, canvas.height);
+                context.font = "40px Arial";
+                context.fillStyle = "blue";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.fillText("Congratulations!", canvas.width / 2, canvas.height / 2);
+            }
+        }
+        function left(){
+            newX = currRectX - 2;
+            newY = currRectY;
+            movingAllowed = canMoveTo(newX, newY);
+            if (movingAllowed === 1) {      // 1 means 'the rectangle can move'
+                drawRectangle(newX, newY, "#0000FF");
+                currRectX = newX;
+                currRectY = newY;
+            }
+            else if (movingAllowed === 2) { // 2 means 'the rectangle reached the end point'
+                clearInterval(intervalVar);
+                makeWhite(0, 0, canvas.width, canvas.height);
+                context.font = "40px Arial";
+                context.fillStyle = "blue";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.fillText("Congratulations!", canvas.width / 2, canvas.height / 2);
+            }
+        }
+        function right(){
+            newX = currRectX + 2;
+            newY = currRectY;
+            movingAllowed = canMoveTo(newX, newY);
+            if (movingAllowed === 1) {      // 1 means 'the rectangle can move'
+                drawRectangle(newX, newY, "#0000FF");
+                currRectX = newX;
+                currRectY = newY;
+            }
+            else if (movingAllowed === 2) { // 2 means 'the rectangle reached the end point'
+                clearInterval(intervalVar);
+                makeWhite(0, 0, canvas.width, canvas.height);
+                context.font = "40px Arial";
+                context.fillStyle = "blue";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.fillText("Congratulations!", canvas.width / 2, canvas.height / 2);
+            }
+        }
+        function down(){
+            newX = currRectX;
+            newY = currRectY + 2;
+            movingAllowed = canMoveTo(newX, newY);
+            if (movingAllowed === 1) {      // 1 means 'the rectangle can move'
+                drawRectangle(newX, newY, "#0000FF");
+                currRectX = newX;
+                currRectY = newY;
+            }
+            else if (movingAllowed === 2) { // 2 means 'the rectangle reached the end point'
+                clearInterval(intervalVar);
+                makeWhite(0, 0, canvas.width, canvas.height);
+                context.font = "40px Arial";
+                context.fillStyle = "blue";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.fillText("Congratulations!", canvas.width / 2, canvas.height / 2);
+            }
+        }
+		function touchStart(event) {   
+			event.preventDefault();
+			var touch = event.touches[0];   
+			startX = touch.pageX;   
+			startY = touch.pageY;   
+			if((startX-15<=currRectX)&&(startX-10>=currRectX)&&(startY-113<=currRectY)&&(startY-108>=currRectY)){
+				onRect=true;
+				return;
+			}
+			onRect=false;
+		}   
+		function touchMove(event) {   
+			if(onRect==true){
+				event.preventDefault();
+				var touch = event.touches[0];   
+			    var touchX = touch.pageX-12.5;
+				var touchY = touch.pageY-110;
+                newX = touchX;
+                newY = touchY;
+				movingAllowed = canMoveTo(newX, newY);
+				if (movingAllowed === 1) {      // 1 means 'the rectangle can move'
+					drawRectangle(newX, newY, "#0000FF");
+					currRectX = newX;
+					currRectY = newY;
+				}
+				else if (movingAllowed === 2) { // 2 means 'the rectangle reached the end point'
+					clearInterval(intervalVar);
+					makeWhite(0, 0, canvas.width, canvas.height);
+					context.font = "40px Arial";
+					context.fillStyle = "blue";
+					context.textAlign = "center";
+					context.textBaseline = "middle";
+					context.fillText("Congratulations!", canvas.width / 2, canvas.height / 2);
+				}
+			}		 
+		}   
+		function touchEnd(event) {   
+			if(onRect==false)return;
+		}   
+        drawMazeAndRectangle(64.5, 6);
+        createTimer(300); // 5 minutes	
+		canvas.addEventListener('touchstart',touchStart,false);
+		canvas.addEventListener('touchmove',touchMove,false);
+		canvas.addEventListener('touchend',touchEnd,false);
+    </script>
+	<input type="button" onclick="up()"  style="position: absolute;width:50px; height:50px;  border:0; background:url(2.png) no-repeat left top;margin-left:0px;" />
+    <input type="button" onclick="left()" style="position: absolute;width:50px; height:50px;  border:0; background:url(1.png) no-repeat left top;margin-left:-50px;margin-top:50px;"/>
+    <input type="button" onclick="right()" style="position: absolute;width:50px; height:50px;  border:0; background:url(3.png) no-repeat left top;margin-left:50px;margin-top:50px;"/>
+    <input type="button" onclick="down()" style="position: absolute;width:50px; height:50px;  border:0; background:url(4.png) no-repeat left top;margin-top:50px;"/>
+</body>
+</html>
